@@ -1,0 +1,14 @@
+# data: too big, and re-downloadable with the scripts
+data/protein_structures/*
+!data/protein_structures/*.py
+
+# large or generated files
+*.npz
+*.gz
+*.pt
+checkpoints/
+tmp/
+
+# junk
+__pycache__/
+.DS_Store
