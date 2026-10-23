@@ -1,0 +1,8 @@
+{
+  "n_val_chains": 3992,
+  "val_long_range_pairs": 94478755,
+  "val_long_range_contact_rate_pct": 1.143,
+  "logreg_training_pairs": 1299815,
+  "logreg_training_contact_rate_pct": 1.729,
+  "logreg_parameters": 221
+}

@@ -5,7 +5,7 @@ baseline results, and make the figures for the preliminary-results section.
 Run from ~/machine_learning (after baselines.py and train.py):
     python model/evaluate.py
 
-Writes to results/preliminary/:
+Writes to results/progress_report/:
     results_table.md            Table: all methods, mean precision, 95% CI
     per_chain_val.csv           per-chain precision for every method
     model_summary.json          parameter count, training time, etc.

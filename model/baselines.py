@@ -12,7 +12,7 @@ validation set with the same metric as the neural model.
                            on the log-loss), so no extra libraries are needed.
 
 Run from ~/machine_learning:   python model/baselines.py
-Writes results/preliminary/: per_chain_val.csv, results_table.md,
+Writes results/progress_report/: per_chain_val.csv, results_table.md,
                              logreg_weights.json, baselines_summary.json
 """
 import json
