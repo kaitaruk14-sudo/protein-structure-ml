@@ -1,14 +1,22 @@
 # data: too big, and re-downloadable with the scripts
 data/protein_structures/*
 !data/protein_structures/*.py
+# small files that pin down the exact dataset and train/val/test split
+!data/protein_structures/backbone_index.tsv
+!data/protein_structures/dataset_split.tsv
 
 # large or generated files
 *.npz
 *.gz
-*.pt
-checkpoints/
+model/checkpoints/*
+# keep the small final checkpoint of each model so teammates can evaluate it
+!model/checkpoints/*_best.pt
+model/checkpoints/*quick*
 tmp/
 
 # junk
 __pycache__/
 .DS_Store
+
+# data zip for teammates (shared through a GitHub Release, not git)
+data_release/

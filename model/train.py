@@ -7,7 +7,7 @@ Run from ~/machine_learning:
 
 Ctrl+C is safe: re-running the same command continues from the last checkpoint.
 Writes: model/checkpoints/basic_{best,last}.pt   (not uploaded to GitHub)
-        results/preliminary/train_log.csv
+        results/progress_report/train_log.csv
 """
 import argparse
 import math
@@ -55,6 +55,7 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args()
 
+    torch.set_num_threads(1)   # see the OpenMP note in common.py
     random.seed(args.seed); np.random.seed(args.seed); torch.manual_seed(args.seed)
     name = "basic_quick" if args.quick else "basic"
     if args.quick:

@@ -7,6 +7,10 @@ import os
 # macOS + conda: two copies of the OpenMP library (one from PyTorch, one from
 # the conda mmseqs2 install) crash Python unless this is set before numpy/torch.
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+# ...and keep OpenMP to one thread: with two OpenMP copies loaded, starting a
+# pool of CPU threads crashes (segfault in pthread_mutex_init). The heavy work
+# runs on the Mac GPU (mps), so this costs almost no speed.
+os.environ.setdefault("OMP_NUM_THREADS", "1")
 
 import csv
 import numpy as np
@@ -15,7 +19,7 @@ import numpy as np
 MODEL_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(MODEL_DIR)
 DATA_DIR = os.environ.get("PROTEIN_DATA_DIR", os.path.join(ROOT, "data", "protein_structures"))
-RESULTS_DIR = os.environ.get("PROTEIN_RESULTS_DIR", os.path.join(ROOT, "results", "preliminary"))
+RESULTS_DIR = os.environ.get("PROTEIN_RESULTS_DIR", os.path.join(ROOT, "results", "progress_report"))
 CHECKPOINT_DIR = os.path.join(MODEL_DIR, "checkpoints")
 
 # ---------- settings shared by all methods ----------
