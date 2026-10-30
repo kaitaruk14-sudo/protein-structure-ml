@@ -18,8 +18,9 @@ import csv
 import json
 import os
 
-from common import (CHECKPOINT_DIR, EVAL_MAX_LEN, RESULTS_DIR, load_index, long_range_pairs,
-                    top_l5_precision, write_table, bootstrap_ci)
+from common import (CHECKPOINT_DIR, CONTACT_CUTOFF, EVAL_MAX_LEN, RESULTS_DIR, distance_matrix,
+                    load_chain, load_index, long_range_pairs, top_l5_precision, write_table,
+                    bootstrap_ci)
 
 import numpy as np
 import torch
@@ -33,12 +34,21 @@ METHODS = [("random", "Random"), ("separation", "Sequence separation"),
 
 @torch.no_grad()
 def evaluate_chains(model, rows, device, return_maps_for=()):
-    """Full-length chains one at a time -> mean val loss, per-chain precision, maps."""
+    """
+    Full-length chains one at a time -> mean val loss, per-chain precision, maps.
+
+    The true contacts are computed from the actual C-beta distances (< 8 Å, exactly as in
+    baselines.py), so every method is scored against identical labels. The label implied
+    by the distogram bins (b["bins"] < CONTACT_BINS) is d < 7.81 Å, because the 63 bin
+    edges are spaced 0.32 Å apart and no edge falls on 8 Å; that variant is kept only as a
+    cross-check (precisions_bins, returned as the 4th value).
+    """
     model.eval()
     ds = ProteinDataset.__new__(ProteinDataset)        # reuse loading code, no cropping
     ds.rows, ds.crop_size, ds.random_crop = rows, None, False
     rng = np.random.default_rng(0)
-    losses, precisions, maps = [], [], {}
+    rng_bins = np.random.default_rng(0)
+    losses, precisions, precisions_bins, maps = [], [], [], {}
     for k in range(len(rows)):
         b = collate([ds[k]])
         tokens, seq_mask = b["tokens"].to(device), b["seq_mask"].to(device)
@@ -46,17 +56,22 @@ def evaluate_chains(model, rows, device, return_maps_for=()):
         bins, pm = b["bins"].to(device), b["pair_mask"].to(device)
         loss = F.cross_entropy(logits, bins, reduction="none")
         losses.append(((loss * pm).sum() / pm.sum().clamp(min=1)).item())
-        prob = logits.softmax(1)[0, :CONTACT_BINS].sum(0).float().cpu().numpy()  # P(<8 Å)
-        true = (b["bins"][0] < CONTACT_BINS).numpy()
+        # score = P(Cβ distance falls in a bin that lies below 8 Å); used only to rank pairs
+        prob = logits.softmax(1)[0, :CONTACT_BINS].sum(0).float().cpu().numpy()
+        _, coords, _ = load_chain(rows[k]["entity_id"])
+        true = distance_matrix(coords) < CONTACT_CUTOFF                  # same labels as baselines
+        true_bins = (b["bins"][0] < CONTACT_BINS).numpy()                # d < 7.81 Å (cross-check)
         mask = b["mask"][0].numpy()
         i, j = long_range_pairs(mask)
         L = len(mask)
         precisions.append(top_l5_precision(prob[i, j], true[i, j], L, rng) if len(i) else None)
+        precisions_bins.append(top_l5_precision(prob[i, j], true_bins[i, j], L, rng_bins) if len(i) else None)
         if rows[k]["entity_id"] in return_maps_for:
             maps[rows[k]["entity_id"]] = (prob, true, mask)
     model.train()
     keep = [p for p in precisions if p is not None]
-    return float(np.mean(losses)), keep, maps
+    keep_bins = [p for p in precisions_bins if p is not None]
+    return float(np.mean(losses)), keep, maps, keep_bins
 
 
 def main():
@@ -100,7 +115,7 @@ def main():
         examples.append(rows[int(np.argmin(np.abs(lengths - target)))]["entity_id"])
 
     print(f"Evaluating neural model ({n_params:,} parameters) on {len(rows):,} val chains...")
-    val_loss, prec, maps = evaluate_chains(model, rows, device, return_maps_for=set(examples))
+    val_loss, prec, maps, prec_bins = evaluate_chains(model, rows, device, return_maps_for=set(examples))
     assert len(prec) == len(base), "chain lists don't match the baselines"
 
     per_chain = {m: [float(r[m]) for r in base] for m, _ in METHODS[:3]}
@@ -119,6 +134,7 @@ def main():
         json.dump({"parameters": n_params, "best_epoch": ck["epoch"],
                    "training_minutes": round(ck["minutes"], 1),
                    "device": str(device), "val_loss_full_chains": round(val_loss, 4),
+                   "neural_precision_with_bin_labels_d_lt_7.81A": round(float(np.mean(prec_bins)), 4),
                    "training_settings": ck["args"]}, f, indent=2)
 
     # ---------------- figures ----------------
