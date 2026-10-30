@@ -1,0 +1,23 @@
+backbone_index.tsv rows: 46,607; dataset_split.tsv rows: 46,613
+[backbone_index] clusters: 9,689; clusters in >1 split: 0; rows per split: {'train': 37283, 'val': 4662, 'test': 4662}
+[dataset_split] clusters: 9,693; clusters in >1 split: 0; rows per split: {'train': 37288, 'val': 4663, 'test': 4662}
+[backbone_index] entity_ids: 46,607 unique of 46,607 rows; entities in >1 split: 0
+entity split assignments that differ between the two files: 0
+entity cluster assignments that differ between the two files: 0
+identical sequences appearing in >1 split: 0
+per_chain_val.csv chains: 3,992; unique: 3,992
+all of them are 'val' in backbone_index: True (splits found: ['val'] in first 50)
+set of splits among per_chain_val.csv chains (backbone_index): {'val'}
+val rows passing filters (>=30 observed, >=50%, len<=512): 3,992
+CSV ids == filtered val ids as sets: True; same order: True
+(a) rows before/after: 3,992/3,992
+    same ids in same order: True
+    unchanged baseline columns: True
+    columns now: ['entity_id', 'length', 'random', 'separation', 'logreg', 'neural']
+(b) values outside [0,1] or NaN: 0; precision*k not a whole number: 0
+(c) 10RC_1: L=143, long-range pairs=6786, k=28, contacts=198
+    separation: hand range [0.0000, 0.2143] vs CSV 0.0357 -> MATCH
+    neural: hand 0.2143 vs CSV 0.2143 -> MATCH
+(c) 4Z68_1: L=155, long-range pairs=8646, k=31, contacts=211
+    separation: hand range [0.0000, 0.1935] vs CSV 0.0323 -> MATCH
+    neural: hand 0.2903 vs CSV 0.2903 -> MATCH
