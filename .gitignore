@@ -11,6 +11,7 @@ data/protein_structures/*
 model/checkpoints/*
 # keep the small final checkpoint of each model so teammates can evaluate it
 !model/checkpoints/*_best.pt
+!model/checkpoints/*_best.joblib
 model/checkpoints/*quick*
 tmp/
 
