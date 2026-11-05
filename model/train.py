@@ -53,11 +53,15 @@ def main():
                    help="validation chains checked after each epoch")
     p.add_argument("--quick", action="store_true", help="tiny smoke test")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--run_name", default="basic",
+                   help="name for this run's checkpoints and log, e.g. 'long' -> "
+                        "checkpoints/long_best.pt and results/.../train_log_long.csv "
+                        "(the default 'basic' is the progress-report model)")
     args = p.parse_args()
 
     torch.set_num_threads(1)   # see the OpenMP note in common.py
     random.seed(args.seed); np.random.seed(args.seed); torch.manual_seed(args.seed)
-    name = "basic_quick" if args.quick else "basic"
+    name = args.run_name + ("_quick" if args.quick else "")
     if args.quick:
         args.epochs, args.val_chains = 1, 10
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
@@ -91,7 +95,8 @@ def main():
     best_path = os.path.join(CHECKPOINT_DIR, f"{name}_best.pt")
     log_dir = os.path.join(RESULTS_DIR, "quick_test") if args.quick else RESULTS_DIR
     os.makedirs(log_dir, exist_ok=True)
-    log_path = os.path.join(log_dir, "train_log.csv")
+    log_name = "train_log.csv" if args.run_name == "basic" else f"train_log_{args.run_name}.csv"
+    log_path = os.path.join(log_dir, log_name)
     start_epoch, best_prec, minutes_done = 0, -1.0, 0.0
     if os.path.exists(last_path):
         ck = torch.load(last_path, map_location=device)
@@ -134,7 +139,8 @@ def main():
                     out_of_time = True
                     break
 
-            val_loss, precisions, _ = evaluate_chains(model, val_rows, device)
+            # evaluate_chains returns (loss, precisions, maps, precisions_with_bin_labels)
+            val_loss, precisions = evaluate_chains(model, val_rows, device)[:2]
             val_prec = float(np.mean(precisions))
             minutes = (time.time() - t0) / 60
             print(f"Epoch {epoch+1}: train loss {running/max(n,1):.3f} | val loss {val_loss:.3f} | "
