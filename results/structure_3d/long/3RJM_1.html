@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3RJM_1 3D</title>
+<script src="https://cdn.jsdelivr.net/npm/3dmol@2.4.2/build/3Dmol-min.js"></script>
+<style>
+ body{margin:0;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;background:#fcfcfb;color:#0b0b0b}
+ header{padding:14px 18px 6px} h1{font-size:18px;margin:0 0 4px} p{margin:2px 0;color:#52514e;font-size:13px}
+ .bar{display:flex;gap:6px;flex-wrap:wrap;padding:8px 18px}
+ button{border:1px solid #d6d5d0;background:#fff;border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer}
+ button.on{background:#0d366b;color:#fff;border-color:#0d366b}
+ #v{position:relative;width:calc(100vw - 36px);height:72vh;margin:0 18px;border:1px solid #e4e3df;border-radius:8px;background:#fff}
+ .legend{padding:8px 18px;font-size:12px;color:#52514e}
+ .sw{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin:0 4px 0 10px}
+</style></head><body>
+<header><h1>3RJM_1 (169 residues)</h1>
+<p>Model: long &middot; RMSD 15.8 &Aring; &middot; TM-score &asymp; 0.21 &middot; oracle RMSD 1.6 &Aring;</p>
+<p>Drag to rotate, scroll to zoom. One point per residue (C&beta; atom).</p></header>
+<div class="bar">
+ <button id="b-both" class="on" onclick="show('both')">Overlay</button>
+ <button id="b-pred" onclick="show('pred')">Predicted</button>
+ <button id="b-real" onclick="show('real')">Real</button>
+ <span style="width:12px"></span>
+ <button id="c-chain" class="on" onclick="colour('chain')">Colour: start &rarr; end</button>
+ <button id="c-conf" onclick="colour('conf')">Colour: confidence</button>
+</div>
+<div id="v"></div>
+<div class="legend" id="lg"></div>
+<script>
+const PRED = `TITLE     3RJM_1 predicted by long; RMSD 15.81 A
+REMARK   2 One CB atom per residue (virtual CB from the backbone for glycine).
+REMARK   3 B-factor column = per-residue confidence 0-100 (predicted structures).
+ATOM      1  CB  MET A   1     -56.517  14.279  18.400  1.00 28.70           C
+ATOM      2  CB  ALA A   2     -53.602  16.307  17.434  1.00 28.69           C
+ATOM      3  CB  ASN A   3     -54.052  19.951  17.553  1.00 29.94           C
+ATOM      4  CB  LYS A   4     -54.504  21.797  21.036  1.00 36.10           C
+ATOM      5  CB  ASP A   5     -50.604  23.664  20.871  1.00 35.31           C
+ATOM      6  CB  GLY A   6     -48.214  21.320  21.165  1.00 30.64           C
+ATOM      7  CB  PRO A   7     -45.014  18.602  22.341  1.00 31.40           C
+ATOM      8  CB  VAL A   8     -44.445  15.348  23.199  1.00 26.11           C
+ATOM      9  CB  CYS A   9     -44.952  12.738  21.691  1.00 28.99           C
+ATOM     10  CB  LEU A  10     -45.357   9.926  22.997  1.00 28.12           C
+ATOM     11  CB  GLN A  11     -43.850   7.744  20.610  1.00 35.31           C
+ATOM     12  CB  VAL A  12     -43.566   6.017  23.196  1.00 28.94           C
+ATOM     13  CB  LYS A  13     -42.472   2.506  20.768  1.00 35.02           C
+ATOM     14  CB  PRO A  14     -41.002  -0.910  20.780  1.00 36.87           C
+ATOM     15  CB  CYS A  15     -41.619  -3.193  22.134  1.00 42.40           C
+ATOM     16  CB  THR A  16     -44.056  -4.811  22.995  1.00 45.50           C
+ATOM     17  CB  PRO A  17     -45.754  -6.375  24.786  1.00 46.19           C
+ATOM     18  CB  GLU A  18     -49.023  -6.241  24.788  1.00 44.24           C
+ATOM     19  CB  PHE A  19     -47.363  -2.710  24.860  1.00 43.12           C
+ATOM     20  CB  TYR A  20     -48.787  -2.672  26.867  1.00 41.37           C
+ATOM     21  CB  GLN A  21     -51.481  -2.121  27.605  1.00 47.74           C
+ATOM     22  CB  THR A  22     -51.764   0.071  26.243  1.00 45.43           C
+ATOM     23  CB  HIS A  23     -49.170   1.778  27.500  1.00 37.97           C
+ATOM     24  CB  PHE A  24     -48.682   3.116  29.821  1.00 33.85           C
+ATOM     25  CB  GLN A  25     -52.883   3.425  28.487  1.00 41.29           C
+ATOM     26  CB  LEU A  26     -50.070   5.787  28.125  1.00 34.21           C
+ATOM     27  CB  ALA A  27     -49.277   7.746  29.159  1.00 33.07           C
+ATOM     28  CB  TYR A  28     -51.338   8.476  29.932  1.00 34.37           C
+ATOM     29  CB  ARG A  29     -53.586   9.543  29.214  1.00 39.93           C
+ATOM     30  CB  LEU A  30     -50.376  12.032  30.240  1.00 31.76           C
+ATOM     31  CB  GLN A  31     -53.604  13.303  31.228  1.00 29.17           C
+ATOM     32  CB  SER A  32     -55.046  15.012  32.511  1.00 27.96           C
+ATOM     33  CB  ARG A  33     -53.606  17.598  33.290  1.00 28.48           C
+ATOM     34  CB  PRO A  34     -51.975  19.407  34.972  1.00 28.29           C
+ATOM     35  CB  ARG A  35     -49.578  20.449  35.819  1.00 33.96           C
+ATOM     36  CB  GLY A  36     -47.896  18.968  33.925  1.00 28.50           C
+ATOM     37  CB  LEU A  37     -45.915  15.715  32.634  1.00 27.59           C
+ATOM     38  CB  ALA A  38     -44.936  14.634  31.245  1.00 29.83           C
+ATOM     39  CB  LEU A  39     -42.813  11.733  30.570  1.00 29.44           C
+ATOM     40  CB  VAL A  40     -41.440   9.608  30.233  1.00 29.21           C
+ATOM     41  CB  LEU A  41     -40.116   7.258  30.609  1.00 28.87           C
+ATOM     42  CB  SER A  42     -40.769   4.423  28.054  1.00 31.49           C
+ATOM     43  CB  ASN A  43     -39.736   0.947  27.538  1.00 31.90           C
+ATOM     44  CB  VAL A  44     -40.274  -0.485  31.119  1.00 28.31           C
+ATOM     45  CB  HIS A  45     -38.898  -4.217  30.504  1.00 31.57           C
+ATOM     46  CB  PHE A  46     -40.555  -4.221  33.262  1.00 29.99           C
+ATOM     47  CB  THR A  47     -39.507  -6.647  33.771  1.00 32.54           C
+ATOM     48  CB  GLY A  48     -41.884  -7.420  35.093  1.00 31.26           C
+ATOM     49  CB  GLU A  49     -42.964  -6.092  37.139  1.00 32.77           C
+ATOM     50  CB  LYS A  50     -44.833  -4.395  37.806  1.00 32.70           C
+ATOM     51  CB  GLU A  51     -46.523  -2.361  37.866  1.00 34.03           C
+ATOM     52  CB  LEU A  52     -45.579   1.132  37.882  1.00 29.61           C
+ATOM     53  CB  GLU A  53     -49.157   1.672  38.698  1.00 33.67           C
+ATOM     54  CB  PHE A  54     -47.892   5.787  37.911  1.00 28.52           C
+ATOM     55  CB  ARG A  55     -49.871   6.084  39.515  1.00 32.42           C
+ATOM     56  CB  SER A  56     -52.843   8.354  39.788  1.00 35.33           C
+ATOM     57  CB  GLY A  57     -52.965  10.561  42.017  1.00 35.16           C
+ATOM     58  CB  GLY A  58     -51.471  12.356  43.674  1.00 32.83           C
+ATOM     59  CB  ASP A  59     -49.534  10.989  44.887  1.00 34.82           C
+ATOM     60  CB  VAL A  60     -47.244   9.873  42.056  1.00 30.73           C
+ATOM     61  CB  ASP A  61     -45.965   8.279  44.259  1.00 35.50           C
+ATOM     62  CB  HIS A  62     -44.673   7.143  42.428  1.00 32.74           C
+ATOM     63  CB  SER A  63     -43.656   5.687  42.768  1.00 36.34           C
+ATOM     64  CB  THR A  64     -42.747   6.917  39.971  1.00 32.70           C
+ATOM     65  CB  LEU A  65     -40.914   7.965  37.871  1.00 32.61           C
+ATOM     66  CB  VAL A  66     -39.966   6.627  38.582  1.00 35.36           C
+ATOM     67  CB  THR A  67     -39.730   4.787  38.444  1.00 38.28           C
+ATOM     68  CB  LEU A  68     -38.662   6.293  35.861  1.00 34.71           C
+ATOM     69  CB  PHE A  69     -37.379   5.636  35.114  1.00 34.02           C
+ATOM     70  CB  LYS A  70     -36.399   2.201  36.218  1.00 45.21           C
+ATOM     71  CB  LEU A  71     -36.140   2.816  33.340  1.00 36.49           C
+ATOM     72  CB  LEU A  72     -34.566   3.018  31.588  1.00 32.97           C
+ATOM     73  CB  GLY A  73     -32.593   2.288  28.807  1.00 36.93           C
+ATOM     74  CB  TYR A  74     -33.789   4.543  28.187  1.00 31.93           C
+ATOM     75  CB  ASP A  75     -34.449   6.571  26.709  1.00 31.73           C
+ATOM     76  CB  VAL A  76     -35.914   8.655  29.228  1.00 26.46           C
+ATOM     77  CB  HIS A  77     -36.762  11.169  27.851  1.00 29.20           C
+ATOM     78  CB  VAL A  78     -38.619  12.612  29.961  1.00 29.88           C
+ATOM     79  CB  LEU A  79     -38.794  13.459  32.108  1.00 29.73           C
+ATOM     80  CB  CYS A  80     -39.232  15.016  33.167  1.00 30.76           C
+ATOM     81  CB  ASP A  81     -40.403  19.700  33.676  1.00 43.07           C
+ATOM     82  CB  GLN A  82     -41.880  20.245  35.890  1.00 42.05           C
+ATOM     83  CB  THR A  83     -40.085  19.390  37.132  1.00 39.90           C
+ATOM     84  CB  ALA A  84     -38.445  19.656  38.045  1.00 45.24           C
+ATOM     85  CB  GLN A  85     -38.070  22.052  40.144  1.00 81.84           C
+ATOM     86  CB  GLU A  86     -39.788  19.977  41.540  1.00 84.16           C
+ATOM     87  CB  MET A  87     -37.906  16.275  40.283  1.00 40.70           C
+ATOM     88  CB  GLN A  88     -36.707  18.396  43.017  1.00 64.97           C
+ATOM     89  CB  GLU A  89     -35.307  19.765  45.028  1.00 85.54           C
+ATOM     90  CB  LYS A  90     -37.354  16.221  45.066  1.00 71.80           C
+ATOM     91  CB  LEU A  91     -35.877  13.020  43.478  1.00 39.88           C
+ATOM     92  CB  GLN A  92     -33.672  16.046  47.269  1.00 73.34           C
+ATOM     93  CB  ASN A  93     -35.604  14.563  48.826  1.00 73.89           C
+ATOM     94  CB  PHE A  94     -36.417   9.935  45.085  1.00 39.59           C
+ATOM     95  CB  ALA A  95     -33.745  10.900  47.416  1.00 44.95           C
+ATOM     96  CB  GLN A  96     -33.074  10.277  50.488  1.00 59.57           C
+ATOM     97  CB  LEU A  97     -33.669   6.842  47.032  1.00 35.54           C
+ATOM     98  CB  PRO A  98     -31.185   6.332  48.927  1.00 45.39           C
+ATOM     99  CB  ALA A  99     -27.631   7.038  47.453  1.00 41.53           C
+ATOM    100  CB  HIS A 100     -27.953   4.585  46.775  1.00 46.67           C
+ATOM    101  CB  ARG A 101     -28.963   3.041  44.860  1.00 45.78           C
+ATOM    102  CB  VAL A 102     -30.912   4.076  42.128  1.00 30.23           C
+ATOM    103  CB  THR A 103     -29.513   3.135  41.148  1.00 33.70           C
+ATOM    104  CB  ASP A 104     -29.896   1.906  39.336  1.00 37.79           C
+ATOM    105  CB  SER A 105     -30.609   3.292  38.520  1.00 33.48           C
+ATOM    106  CB  CYS A 106     -31.594   5.927  37.853  1.00 30.21           C
+ATOM    107  CB  ILE A 107     -30.804   7.283  36.651  1.00 32.70           C
+ATOM    108  CB  VAL A 108     -30.202   7.515  34.875  1.00 33.61           C
+ATOM    109  CB  ALA A 109     -31.155   8.324  33.354  1.00 34.10           C
+ATOM    110  CB  LEU A 110     -32.048   9.731  32.957  1.00 33.97           C
+ATOM    111  CB  LEU A 111     -29.959  10.760  31.962  1.00 35.70           C
+ATOM    112  CB  SER A 112     -29.101  11.995  29.283  1.00 37.85           C
+ATOM    113  CB  HIS A 113     -30.003  13.449  27.773  1.00 36.39           C
+ATOM    114  CB  GLY A 114     -31.057  16.056  26.879  1.00 32.95           C
+ATOM    115  CB  VAL A 115     -29.046  16.238  28.146  1.00 29.44           C
+ATOM    116  CB  GLU A 116     -30.256  19.204  26.741  1.00 39.72           C
+ATOM    117  CB  GLY A 117     -29.980  20.248  28.699  1.00 33.14           C
+ATOM    118  CB  ALA A 118     -29.854  18.805  30.942  1.00 31.00           C
+ATOM    119  CB  ILE A 119     -28.935  18.190  32.992  1.00 30.50           C
+ATOM    120  CB  TYR A 120     -27.681  20.279  34.507  1.00 32.21           C
+ATOM    121  CB  GLY A 121     -28.384  20.099  37.230  1.00 31.84           C
+ATOM    122  CB  VAL A 122     -27.789  18.888  38.799  1.00 30.80           C
+ATOM    123  CB  ASP A 123     -25.957  20.450  40.815  1.00 36.20           C
+ATOM    124  CB  GLY A 124     -26.935  18.534  42.595  1.00 38.73           C
+ATOM    125  CB  LYS A 125     -25.804  17.202  41.464  1.00 33.64           C
+ATOM    126  CB  LEU A 126     -24.356  16.328  38.565  1.00 37.01           C
+ATOM    127  CB  LEU A 127     -23.044  15.284  39.357  1.00 42.23           C
+ATOM    128  CB  GLN A 128     -23.569  13.342  40.025  1.00 43.01           C
+ATOM    129  CB  LEU A 129     -24.128  12.397  36.551  1.00 34.54           C
+ATOM    130  CB  GLN A 130     -20.260  11.841  38.602  1.00 52.28           C
+ATOM    131  CB  GLU A 131     -21.061  10.442  39.828  1.00 51.52           C
+ATOM    132  CB  VAL A 132     -24.178   9.108  36.791  1.00 38.10           C
+ATOM    133  CB  PHE A 133     -21.801   8.093  36.114  1.00 41.20           C
+ATOM    134  CB  GLN A 134     -18.967   7.406  38.662  1.00 57.78           C
+ATOM    135  CB  LEU A 135     -21.599   5.659  37.915  1.00 43.21           C
+ATOM    136  CB  PHE A 136     -21.925   4.345  36.380  1.00 41.45           C
+ATOM    137  CB  ASP A 137     -16.053   4.707  36.518  1.00 51.38           C
+ATOM    138  CB  ASN A 138     -14.194   2.569  38.290  1.00 53.10           C
+ATOM    139  CB  ALA A 139     -15.245   1.304  35.284  1.00 43.19           C
+ATOM    140  CB  ASN A 140     -15.353  -1.577  37.021  1.00 45.52           C
+ATOM    141  CB  CYS A 141     -17.197  -1.914  33.801  1.00 37.45           C
+ATOM    142  CB  PRO A 142     -18.762  -5.427  37.450  1.00 45.96           C
+ATOM    143  CB  SER A 143     -21.500  -6.003  37.398  1.00 43.37           C
+ATOM    144  CB  LEU A 144     -22.907  -4.361  35.423  1.00 35.43           C
+ATOM    145  CB  GLN A 145     -23.174  -7.007  33.418  1.00 43.02           C
+ATOM    146  CB  ASN A 146     -22.870  -6.278  29.981  1.00 41.27           C
+ATOM    147  CB  LYS A 147     -25.438  -4.329  30.352  1.00 33.71           C
+ATOM    148  CB  PRO A 148     -25.358  -2.012  28.009  1.00 33.00           C
+ATOM    149  CB  LYS A 149     -24.452   0.017  26.911  1.00 36.31           C
+ATOM    150  CB  MET A 150     -23.555   2.622  26.929  1.00 32.65           C
+ATOM    151  CB  PHE A 151     -24.695   4.999  27.295  1.00 29.14           C
+ATOM    152  CB  PHE A 152     -24.226   7.412  26.990  1.00 28.21           C
+ATOM    153  CB  ILE A 153     -23.943   9.223  26.257  1.00 27.42           C
+ATOM    154  CB  GLN A 154     -20.146  10.469  26.215  1.00 32.42           C
+ATOM    155  CB  ALA A 155     -19.534  13.186  27.663  1.00 28.53           C
+ATOM    156  CB  CYS A 156     -18.190  15.539  28.266  1.00 27.38           C
+ATOM    157  CB  ARG A 157     -15.215  17.529  29.338  1.00 39.82           C
+ATOM    158  CB  GLY A 158     -15.863  20.386  28.629  1.00 37.56           C
+ATOM    159  CB  ASP A 159     -15.224  21.860  26.422  1.00 41.70           C
+ATOM    160  CB  GLU A 160     -18.277  22.553  23.630  1.00 43.22           C
+ATOM    161  CB  THR A 161     -15.184  22.080  21.253  1.00 43.06           C
+ATOM    162  CB  ASP A 162     -19.171  21.455  18.409  1.00 40.15           C
+ATOM    163  CB  ARG A 163     -15.843  21.129  16.364  1.00 40.84           C
+ATOM    164  CB  GLY A 164     -17.639  18.030  14.731  1.00 39.22           C
+ATOM    165  CB  VAL A 165     -17.233  14.669  15.664  1.00 33.68           C
+ATOM    166  CB  ASP A 166     -14.265  12.863  14.778  1.00 44.29           C
+ATOM    167  CB  GLN A 167     -10.593  13.346  16.782  1.00 36.84           C
+ATOM    168  CB  GLN A 168      -9.888  10.789  18.614  1.00 31.33           C
+ATOM    169  CB  ASP A 169     -11.880   7.943  17.884  1.00 32.57           C
+TER
+CONECT    1    2
+CONECT    2    3
+CONECT    3    4
+CONECT    4    5
+CONECT    5    6
+CONECT    6    7
+CONECT    7    8
+CONECT    8    9
+CONECT    9   10
+CONECT   10   11
+CONECT   11   12
+CONECT   12   13
+CONECT   13   14
+CONECT   14   15
+CONECT   15   16
+CONECT   16   17
+CONECT   17   18
+CONECT   18   19
+CONECT   19   20
+CONECT   20   21
+CONECT   21   22
+CONECT   22   23
+CONECT   23   24
+CONECT   24   25
+CONECT   25   26
+CONECT   26   27
+CONECT   27   28
+CONECT   28   29
+CONECT   29   30
+CONECT   30   31
+CONECT   31   32
+CONECT   32   33
+CONECT   33   34
+CONECT   34   35
+CONECT   35   36
+CONECT   36   37
+CONECT   37   38
+CONECT   38   39
+CONECT   39   40
+CONECT   40   41
+CONECT   41   42
+CONECT   42   43
+CONECT   43   44
+CONECT   44   45
+CONECT   45   46
+CONECT   46   47
+CONECT   47   48
+CONECT   48   49
+CONECT   49   50
+CONECT   50   51
+CONECT   51   52
+CONECT   52   53
+CONECT   53   54
+CONECT   54   55
+CONECT   55   56
+CONECT   56   57
+CONECT   57   58
+CONECT   58   59
+CONECT   59   60
+CONECT   60   61
+CONECT   61   62
+CONECT   62   63
+CONECT   63   64
+CONECT   64   65
+CONECT   65   66
+CONECT   66   67
+CONECT   67   68
+CONECT   68   69
+CONECT   69   70
+CONECT   70   71
+CONECT   71   72
+CONECT   72   73
+CONECT   73   74
+CONECT   74   75
+CONECT   75   76
+CONECT   76   77
+CONECT   77   78
+CONECT   78   79
+CONECT   79   80
+CONECT   80   81
+CONECT   81   82
+CONECT   82   83
+CONECT   83   84
+CONECT   84   85
+CONECT   85   86
+CONECT   86   87
+CONECT   87   88
+CONECT   88   89
+CONECT   89   90
+CONECT   90   91
+CONECT   91   92
+CONECT   92   93
+CONECT   93   94
+CONECT   94   95
+CONECT   95   96
+CONECT   96   97
+CONECT   97   98
+CONECT   98   99
+CONECT   99  100
+CONECT  100  101
+CONECT  101  102
+CONECT  102  103
+CONECT  103  104
+CONECT  104  105
+CONECT  105  106
+CONECT  106  107
+CONECT  107  108
+CONECT  108  109
+CONECT  109  110
+CONECT  110  111
+CONECT  111  112
+CONECT  112  113
+CONECT  113  114
+CONECT  114  115
+CONECT  115  116
+CONECT  116  117
+CONECT  117  118
+CONECT  118  119
+CONECT  119  120
+CONECT  120  121
+CONECT  121  122
+CONECT  122  123
+CONECT  123  124
+CONECT  124  125
+CONECT  125  126
+CONECT  126  127
+CONECT  127  128
+CONECT  128  129
+CONECT  129  130
+CONECT  130  131
+CONECT  131  132
+CONECT  132  133
+CONECT  133  134
+CONECT  134  135
+CONECT  135  136
+CONECT  136  137
+CONECT  137  138
+CONECT  138  139
+CONECT  139  140
+CONECT  140  141
+CONECT  141  142
+CONECT  142  143
+CONECT  143  144
+CONECT  144  145
+CONECT  145  146
+CONECT  146  147
+CONECT  147  148
+CONECT  148  149
+CONECT  149  150
+CONECT  150  151
+CONECT  151  152
+CONECT  152  153
+CONECT  153  154
+CONECT  154  155
+CONECT  155  156
+CONECT  156  157
+CONECT  157  158
+CONECT  158  159
+CONECT  159  160
+CONECT  160  161
+CONECT  161  162
+CONECT  162  163
+CONECT  163  164
+CONECT  164  165
+CONECT  165  166
+CONECT  166  167
+CONECT  167  168
+CONECT  168  169
+END
+`;
+const REAL = `TITLE     3RJM_1 experimental structure (C-beta)
+REMARK   2 One CB atom per residue (virtual CB from the backbone for glycine).
+REMARK   3 B-factor column = per-residue confidence 0-100 (predicted structures).
+ATOM      1  CB  LEU A  10     -48.566  10.250  23.743  1.00  0.00           C
+ATOM      2  CB  GLN A  11     -51.817   6.185  20.929  1.00  0.00           C
+ATOM      3  CB  VAL A  12     -48.038   2.641  23.711  1.00  0.00           C
+ATOM      4  CB  LYS A  13     -49.017   0.448  18.288  1.00  0.00           C
+ATOM      5  CB  PRO A  14     -50.877  -3.748  21.941  1.00  0.00           C
+ATOM      6  CB  CYS A  15     -46.027  -6.326  20.874  1.00  0.00           C
+ATOM      7  CB  THR A  16     -49.225  -9.293  17.437  1.00  0.00           C
+ATOM      8  CB  PRO A  17     -50.322 -13.316  20.928  1.00  0.00           C
+ATOM      9  CB  GLU A  18     -47.876 -13.616  16.192  1.00  0.00           C
+ATOM     10  CB  PHE A  19     -44.740  -9.698  18.138  1.00  0.00           C
+ATOM     11  CB  TYR A  20     -45.341 -12.099  22.905  1.00  0.00           C
+ATOM     12  CB  GLN A  21     -45.308 -16.713  20.556  1.00  0.00           C
+ATOM     13  CB  THR A  22     -41.742 -15.013  17.091  1.00  0.00           C
+ATOM     14  CB  HIS A  23     -39.565 -11.668  20.331  1.00  0.00           C
+ATOM     15  CB  PHE A  24     -40.821 -14.361  25.022  1.00  0.00           C
+ATOM     16  CB  GLN A  25     -36.985 -17.682  23.598  1.00  0.00           C
+ATOM     17  CB  LEU A  26     -34.117 -13.777  21.482  1.00  0.00           C
+ATOM     18  CB  ALA A  27     -36.327 -10.381  24.857  1.00  0.00           C
+ATOM     19  CB  TYR A  28     -34.403  -8.729  29.363  1.00  0.00           C
+ATOM     20  CB  ARG A  29     -37.850 -12.136  32.037  1.00  0.00           C
+ATOM     21  CB  LEU A  30     -39.843  -7.393  29.409  1.00  0.00           C
+ATOM     22  CB  GLN A  31     -44.010 -10.923  31.314  1.00  0.00           C
+ATOM     23  CB  SER A  32     -43.102  -7.817  36.079  1.00  0.00           C
+ATOM     24  CB  ARG A  33     -48.612  -6.506  36.039  1.00  0.00           C
+ATOM     25  CB  PRO A  34     -45.865  -1.856  36.905  1.00  0.00           C
+ATOM     26  CB  ARG A  35     -43.168  -3.039  32.527  1.00  0.00           C
+ATOM     27  CB  GLY A  36     -39.782  -1.738  35.744  1.00  0.00           C
+ATOM     28  CB  LEU A  37     -40.234   1.463  39.870  1.00  0.00           C
+ATOM     29  CB  ALA A  38     -40.774   4.762  35.051  1.00  0.00           C
+ATOM     30  CB  LEU A  39     -37.433   7.642  38.857  1.00  0.00           C
+ATOM     31  CB  VAL A  40     -40.136  11.327  35.060  1.00  0.00           C
+ATOM     32  CB  LEU A  41     -35.489  13.158  38.346  1.00  0.00           C
+ATOM     33  CB  SER A  42     -38.258  17.423  35.077  1.00  0.00           C
+ATOM     34  CB  ASN A  43     -33.747  20.255  37.461  1.00  0.00           C
+ATOM     35  CB  VAL A  44     -37.968  23.229  34.909  1.00  0.00           C
+ATOM     36  CB  HIS A  45     -37.394  26.694  38.450  1.00  0.00           C
+ATOM     37  CB  PHE A  46     -31.462  26.854  37.992  1.00  0.00           C
+ATOM     38  CB  THR A  47     -32.847  29.083  42.955  1.00  0.00           C
+ATOM     39  CB  GLY A  48     -27.315  27.667  42.598  1.00  0.00           C
+ATOM     40  CB  GLU A  49     -23.923  31.196  43.712  1.00  0.00           C
+ATOM     41  CB  LYS A  50     -23.583  28.666  38.983  1.00  0.00           C
+ATOM     42  CB  GLU A  51     -27.172  32.782  36.504  1.00  0.00           C
+ATOM     43  CB  LEU A  52     -28.550  27.202  35.248  1.00  0.00           C
+ATOM     44  CB  GLU A  53     -31.085  29.839  30.769  1.00  0.00           C
+ATOM     45  CB  PHE A  54     -36.000  29.361  33.448  1.00  0.00           C
+ATOM     46  CB  ARG A  55     -35.090  23.972  31.353  1.00  0.00           C
+ATOM     47  CB  SER A  56     -38.732  27.780  28.246  1.00  0.00           C
+ATOM     48  CB  GLY A  57     -39.677  23.408  26.229  1.00  0.00           C
+ATOM     49  CB  GLY A  58     -38.241  21.607  31.485  1.00  0.00           C
+ATOM     50  CB  ASP A  59     -43.642  22.104  31.553  1.00  0.00           C
+ATOM     51  CB  VAL A  60     -43.599  19.907  26.648  1.00  0.00           C
+ATOM     52  CB  ASP A  61     -39.249  17.260  28.726  1.00  0.00           C
+ATOM     53  CB  HIS A  62     -42.074  16.765  33.013  1.00  0.00           C
+ATOM     54  CB  SER A  63     -46.534  16.243  30.164  1.00  0.00           C
+ATOM     55  CB  THR A  64     -43.455  13.925  26.678  1.00  0.00           C
+ATOM     56  CB  LEU A  65     -40.933  11.235  30.282  1.00  0.00           C
+ATOM     57  CB  VAL A  66     -45.420  11.573  33.393  1.00  0.00           C
+ATOM     58  CB  THR A  67     -48.009  10.565  28.853  1.00  0.00           C
+ATOM     59  CB  LEU A  68     -43.804   7.929  27.232  1.00  0.00           C
+ATOM     60  CB  PHE A  69     -42.863   5.777  31.751  1.00  0.00           C
+ATOM     61  CB  LYS A  70     -48.374   6.058  32.435  1.00  0.00           C
+ATOM     62  CB  LEU A  71     -48.583   4.537  27.468  1.00  0.00           C
+ATOM     63  CB  LEU A  72     -44.029   1.718  28.429  1.00  0.00           C
+ATOM     64  CB  GLY A  73     -46.702  -1.682  31.375  1.00  0.00           C
+ATOM     65  CB  TYR A  74     -43.432   2.231  34.007  1.00  0.00           C
+ATOM     66  CB  ASP A  75     -45.280   1.809  39.298  1.00  0.00           C
+ATOM     67  CB  VAL A  76     -44.696   7.073  36.288  1.00  0.00           C
+ATOM     68  CB  HIS A  77     -41.573   7.575  41.348  1.00  0.00           C
+ATOM     69  CB  VAL A  78     -43.195  12.670  39.301  1.00  0.00           C
+ATOM     70  CB  LEU A  79     -38.264  13.939  41.808  1.00  0.00           C
+ATOM     71  CB  CYS A  80     -40.648  18.889  39.870  1.00  0.00           C
+ATOM     72  CB  ASP A  81     -37.589  22.076  41.144  1.00  0.00           C
+ATOM     73  CB  GLN A  82     -34.412  17.476  43.055  1.00  0.00           C
+ATOM     74  CB  THR A  83     -30.723  20.485  45.949  1.00  0.00           C
+ATOM     75  CB  ALA A  84     -26.457  18.350  43.720  1.00  0.00           C
+ATOM     76  CB  GLN A  85     -27.921  17.126  48.642  1.00  0.00           C
+ATOM     77  CB  GLU A  86     -32.876  16.818  46.809  1.00  0.00           C
+ATOM     78  CB  MET A  87     -30.540  14.684  42.575  1.00  0.00           C
+ATOM     79  CB  GLN A  88     -27.191  12.183  45.732  1.00  0.00           C
+ATOM     80  CB  GLU A  89     -30.972  11.795  49.341  1.00  0.00           C
+ATOM     81  CB  LYS A  90     -34.796  11.243  46.032  1.00  0.00           C
+ATOM     82  CB  LEU A  91     -31.008   8.721  42.672  1.00  0.00           C
+ATOM     83  CB  GLN A  92     -29.738   6.511  47.400  1.00  0.00           C
+ATOM     84  CB  ASN A  93     -34.983   6.701  48.595  1.00  0.00           C
+ATOM     85  CB  PHE A  94     -35.599   5.688  43.451  1.00  0.00           C
+ATOM     86  CB  ALA A  95     -31.441   2.476  43.579  1.00  0.00           C
+ATOM     87  CB  GLN A  96     -32.865   1.271  48.446  1.00  0.00           C
+ATOM     88  CB  LEU A  97     -38.208   1.073  45.985  1.00  0.00           C
+ATOM     89  CB  PRO A  98     -38.849  -3.801  48.906  1.00  0.00           C
+ATOM     90  CB  ALA A  99     -41.707  -1.993  44.374  1.00  0.00           C
+ATOM     91  CB  HIS A 100     -36.616  -3.218  42.453  1.00  0.00           C
+ATOM     92  CB  ARG A 101     -38.079  -7.888  44.919  1.00  0.00           C
+ATOM     93  CB  VAL A 102     -42.579  -8.157  42.641  1.00  0.00           C
+ATOM     94  CB  THR A 103     -40.667  -4.704  38.671  1.00  0.00           C
+ATOM     95  CB  ASP A 104     -39.367  -7.761  34.426  1.00  0.00           C
+ATOM     96  CB  SER A 105     -37.383  -3.563  33.131  1.00  0.00           C
+ATOM     97  CB  CYS A 106     -35.307  -0.209  36.847  1.00  0.00           C
+ATOM     98  CB  ILE A 107     -37.575   3.463  33.163  1.00  0.00           C
+ATOM     99  CB  VAL A 108     -33.378   6.302  36.136  1.00  0.00           C
+ATOM    100  CB  ALA A 109     -36.332   9.967  32.436  1.00  0.00           C
+ATOM    101  CB  LEU A 110     -31.625  12.465  35.020  1.00  0.00           C
+ATOM    102  CB  LEU A 111     -35.223  16.164  32.261  1.00  0.00           C
+ATOM    103  CB  SER A 112     -31.114  18.700  34.895  1.00  0.00           C
+ATOM    104  CB  HIS A 113     -28.480  22.779  33.170  1.00  0.00           C
+ATOM    105  CB  GLY A 114     -25.726  18.135  32.462  1.00  0.00           C
+ATOM    106  CB  VAL A 115     -20.753  19.928  32.883  1.00  0.00           C
+ATOM    107  CB  GLU A 116     -18.419  16.298  30.024  1.00  0.00           C
+ATOM    108  CB  GLY A 117     -19.172  13.065  33.309  1.00  0.00           C
+ATOM    109  CB  ALA A 118     -21.725  16.123  36.405  1.00  0.00           C
+ATOM    110  CB  ILE A 119     -27.356  16.092  35.707  1.00  0.00           C
+ATOM    111  CB  TYR A 120     -27.110  21.441  37.228  1.00  0.00           C
+ATOM    112  CB  GLY A 121     -29.396  19.739  42.127  1.00  0.00           C
+ATOM    113  CB  VAL A 122     -32.975  23.479  41.642  1.00  0.00           C
+ATOM    114  CB  ASP A 123     -28.605  24.221  44.706  1.00  0.00           C
+ATOM    115  CB  GLY A 124     -25.766  26.187  40.733  1.00  0.00           C
+ATOM    116  CB  LYS A 125     -24.324  21.525  43.702  1.00  0.00           C
+ATOM    117  CB  LEU A 126     -21.981  18.906  39.322  1.00  0.00           C
+ATOM    118  CB  LEU A 127     -25.706  14.684  40.971  1.00  0.00           C
+ATOM    119  CB  GLN A 128     -20.443  12.421  39.348  1.00  0.00           C
+ATOM    120  CB  LEU A 129     -23.640  10.494  35.031  1.00  0.00           C
+ATOM    121  CB  GLN A 130     -19.693   7.524  37.459  1.00  0.00           C
+ATOM    122  CB  GLU A 131     -22.228   9.121  41.759  1.00  0.00           C
+ATOM    123  CB  VAL A 132     -26.701   8.567  38.783  1.00  0.00           C
+ATOM    124  CB  PHE A 133     -24.518   4.334  36.388  1.00  0.00           C
+ATOM    125  CB  GLN A 134     -22.502   3.477  41.283  1.00  0.00           C
+ATOM    126  CB  LEU A 135     -27.743   4.390  42.758  1.00  0.00           C
+ATOM    127  CB  PHE A 136     -29.208   1.204  39.179  1.00  0.00           C
+ATOM    128  CB  ASP A 137     -24.016  -1.253  39.917  1.00  0.00           C
+ATOM    129  CB  ASN A 138     -24.462  -6.443  39.868  1.00  0.00           C
+ATOM    130  CB  ALA A 139     -21.918  -3.826  43.970  1.00  0.00           C
+ATOM    131  CB  ASN A 140     -25.288  -0.616  44.909  1.00  0.00           C
+ATOM    132  CB  CYS A 141     -29.566  -1.996  42.675  1.00  0.00           C
+ATOM    133  CB  PRO A 142     -28.950  -7.510  45.420  1.00  0.00           C
+ATOM    134  CB  SER A 143     -33.847  -5.528  44.044  1.00  0.00           C
+ATOM    135  CB  LEU A 144     -32.161  -4.127  39.494  1.00  0.00           C
+ATOM    136  CB  GLN A 145     -28.846  -9.066  40.204  1.00  0.00           C
+ATOM    137  CB  ASN A 146     -29.963 -10.866  35.942  1.00  0.00           C
+ATOM    138  CB  LYS A 147     -33.741  -6.747  36.019  1.00  0.00           C
+ATOM    139  CB  PRO A 148     -33.295  -4.566  30.835  1.00  0.00           C
+ATOM    140  CB  LYS A 149     -31.145  -0.810  34.739  1.00  0.00           C
+ATOM    141  CB  MET A 150     -34.123   1.954  30.386  1.00  0.00           C
+ATOM    142  CB  PHE A 151     -30.031   5.582  32.353  1.00  0.00           C
+ATOM    143  CB  PHE A 152     -33.742   8.589  29.132  1.00  0.00           C
+ATOM    144  CB  ILE A 153     -28.822  11.533  30.527  1.00  0.00           C
+ATOM    145  CB  GLN A 154     -33.187  15.392  28.689  1.00  0.00           C
+ATOM    146  CB  ALA A 155     -28.308  16.882  31.052  1.00  0.00           C
+ATOM    147  CB  CYS A 156     -25.811  20.779  28.040  1.00  0.00           C
+ATOM    148  CB  ARG A 157     -22.257  16.502  27.408  1.00  0.00           C
+ATOM    149  CB  GLY A 158     -20.100  20.520  25.640  1.00  0.00           C
+ATOM    150  CB  ASP A 159     -21.014  25.786  26.910  1.00  0.00           C
+ATOM    151  CB  GLU A 160     -18.911  24.162  21.895  1.00  0.00           C
+ATOM    152  CB  THR A 161     -23.329  26.309  18.889  1.00  0.00           C
+ATOM    153  CB  ASP A 162     -22.880  20.925  16.800  1.00  0.00           C
+ATOM    154  CB  ARG A 163     -21.746  25.760  13.178  1.00  0.00           C
+ATOM    155  CB  GLY A 164     -24.313  21.523  11.287  1.00  0.00           C
+ATOM    156  CB  VAL A 165     -20.176  19.551   8.719  1.00  0.00           C
+ATOM    157  CB  ASP A 166     -22.000  21.758   3.753  1.00  0.00           C
+ATOM    158  CB  GLN A 167     -24.214  16.828   2.802  1.00  0.00           C
+ATOM    159  CB  GLN A 168     -18.511  16.311   1.215  1.00  0.00           C
+ATOM    160  CB  ASP A 169     -20.235  15.666  -3.437  1.00  0.00           C
+TER
+CONECT    1    2
+CONECT    2    3
+CONECT    3    4
+CONECT    4    5
+CONECT    5    6
+CONECT    6    7
+CONECT    7    8
+CONECT    8    9
+CONECT    9   10
+CONECT   10   11
+CONECT   11   12
+CONECT   12   13
+CONECT   13   14
+CONECT   14   15
+CONECT   15   16
+CONECT   16   17
+CONECT   17   18
+CONECT   18   19
+CONECT   19   20
+CONECT   20   21
+CONECT   21   22
+CONECT   22   23
+CONECT   23   24
+CONECT   24   25
+CONECT   25   26
+CONECT   26   27
+CONECT   27   28
+CONECT   28   29
+CONECT   29   30
+CONECT   30   31
+CONECT   31   32
+CONECT   32   33
+CONECT   33   34
+CONECT   34   35
+CONECT   35   36
+CONECT   36   37
+CONECT   37   38
+CONECT   38   39
+CONECT   39   40
+CONECT   40   41
+CONECT   41   42
+CONECT   42   43
+CONECT   43   44
+CONECT   44   45
+CONECT   45   46
+CONECT   46   47
+CONECT   47   48
+CONECT   48   49
+CONECT   49   50
+CONECT   50   51
+CONECT   51   52
+CONECT   52   53
+CONECT   53   54
+CONECT   54   55
+CONECT   55   56
+CONECT   56   57
+CONECT   57   58
+CONECT   58   59
+CONECT   59   60
+CONECT   60   61
+CONECT   61   62
+CONECT   62   63
+CONECT   63   64
+CONECT   64   65
+CONECT   65   66
+CONECT   66   67
+CONECT   67   68
+CONECT   68   69
+CONECT   69   70
+CONECT   70   71
+CONECT   71   72
+CONECT   72   73
+CONECT   73   74
+CONECT   74   75
+CONECT   75   76
+CONECT   76   77
+CONECT   77   78
+CONECT   78   79
+CONECT   79   80
+CONECT   80   81
+CONECT   81   82
+CONECT   82   83
+CONECT   83   84
+CONECT   84   85
+CONECT   85   86
+CONECT   86   87
+CONECT   87   88
+CONECT   88   89
+CONECT   89   90
+CONECT   90   91
+CONECT   91   92
+CONECT   92   93
+CONECT   93   94
+CONECT   94   95
+CONECT   95   96
+CONECT   96   97
+CONECT   97   98
+CONECT   98   99
+CONECT   99  100
+CONECT  100  101
+CONECT  101  102
+CONECT  102  103
+CONECT  103  104
+CONECT  104  105
+CONECT  105  106
+CONECT  106  107
+CONECT  107  108
+CONECT  108  109
+CONECT  109  110
+CONECT  110  111
+CONECT  111  112
+CONECT  112  113
+CONECT  113  114
+CONECT  114  115
+CONECT  115  116
+CONECT  116  117
+CONECT  117  118
+CONECT  118  119
+CONECT  119  120
+CONECT  120  121
+CONECT  121  122
+CONECT  122  123
+CONECT  123  124
+CONECT  124  125
+CONECT  125  126
+CONECT  126  127
+CONECT  127  128
+CONECT  128  129
+CONECT  129  130
+CONECT  130  131
+CONECT  131  132
+CONECT  132  133
+CONECT  133  134
+CONECT  134  135
+CONECT  135  136
+CONECT  136  137
+CONECT  137  138
+CONECT  138  139
+CONECT  139  140
+CONECT  140  141
+CONECT  141  142
+CONECT  142  143
+CONECT  143  144
+CONECT  144  145
+CONECT  145  146
+CONECT  146  147
+CONECT  147  148
+CONECT  148  149
+CONECT  149  150
+CONECT  150  151
+CONECT  151  152
+CONECT  152  153
+CONECT  153  154
+CONECT  154  155
+CONECT  155  156
+CONECT  156  157
+CONECT  157  158
+CONECT  158  159
+CONECT  159  160
+END
+`;
+const viewer = $3Dmol.createViewer("v", {backgroundColor: "white"});
+const mPred = viewer.addModel(PRED, "pdb");
+const mReal = viewer.addModel(REAL, "pdb");
+let mode = "both", scheme = "chain";
+const L = 169;
+function rainbow(a){ const t = (a.resi - 1) / Math.max(L - 1, 1);
+  const c = [[48,18,59],[70,107,227],[40,187,236],[50,241,151],[164,252,60],[237,208,58],[251,128,34],[213,51,6],[122,4,3]];
+  const x = t * (c.length - 1), i = Math.min(Math.floor(x), c.length - 2), f = x - i;
+  const m = c[i].map((v, k) => Math.round(v + f * (c[i + 1][k] - v)));
+  return "rgb(" + m.join(",") + ")"; }
+function conf(a){ const b = Math.max(0, Math.min(100, a.b)) / 100;
+  const lo = [214,84,52], mid = [240,208,88], hi = [42,120,214];
+  const m = b < 0.5 ? lo.map((v,k)=>Math.round(v + (b/0.5)*(mid[k]-v))) : mid.map((v,k)=>Math.round(v + ((b-0.5)/0.5)*(hi[k]-v)));
+  return "rgb(" + m.join(",") + ")"; }
+function render(){
+  viewer.setStyle({}, {});
+  const predCol = scheme === "conf" ? {colorfunc: conf} : {colorfunc: rainbow};
+  if (mode !== "real") viewer.setStyle({model: mPred}, {stick: Object.assign({radius: 0.35}, predCol), sphere: Object.assign({scale: 0.32}, predCol)});
+  if (mode !== "pred") {
+    const realCol = mode === "both" ? {color: "#9a9893"} : {colorfunc: rainbow};
+    viewer.setStyle({model: mReal}, {stick: Object.assign({radius: mode === "both" ? 0.5 : 0.35, opacity: mode === "both" ? 0.55 : 1}, realCol)});
+  }
+  viewer.render();
+  document.getElementById("lg").innerHTML = mode === "both"
+    ? '<span class="sw" style="background:#9a9893"></span>real structure (grey) <span class="sw" style="background:#2a78d6"></span>prediction (' + (scheme === "conf" ? "confidence colours" : "start &rarr; end colours") + ')'
+    : (scheme === "conf" && mode === "pred" ? '<span class="sw" style="background:rgb(214,84,52)"></span>low confidence <span class="sw" style="background:rgb(240,208,88)"></span>medium <span class="sw" style="background:rgb(42,120,214)"></span>high'
+       : '<span class="sw" style="background:rgb(70,107,227)"></span>chain start &rarr; <span class="sw" style="background:rgb(213,51,6)"></span>chain end');
+}
+function show(m){ mode = m; for (const k of ["both","pred","real"]) document.getElementById("b-"+k).classList.toggle("on", k === m); render(); viewer.zoomTo(); viewer.render(); }
+function colour(c){ scheme = c; for (const k of ["chain","conf"]) document.getElementById("c-"+k).classList.toggle("on", k === c); render(); }
+render(); viewer.zoomTo(); viewer.render();
+</script></body></html>
