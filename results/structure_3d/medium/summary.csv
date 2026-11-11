@@ -1,0 +1,6 @@
+entity_id,length,n_observed,rmsd_pred,tm_pred,mirror_pred,lddt_pred,lddt_oracle,mean_confidence,confidence_vs_lddt_spearman,rmsd_oracle,tm_oracle
+8COK_1,104,101,6.643,0.32,True,0.579,1.0,71.2,0.361,0.0,1.0
+3RJM_1,169,160,13.693,0.209,True,0.282,0.999,36.3,0.316,1.597,0.958
+6Z6Z_1,187,172,16.835,0.223,True,0.261,1.0,31.9,0.148,0.001,1.0
+8SEB_3,152,152,14.507,0.165,True,0.262,1.0,38.9,0.296,0.001,1.0
+4BCN_2,262,257,18.5,0.163,True,0.27,1.0,42.4,-0.089,0.0,1.0

@@ -1,6 +1,6 @@
-entity_id,length,n_observed,rmsd_pred,tm_pred,mirror_pred,rmsd_oracle,tm_oracle
-8COK_1,104,101,8.692,0.237,False,0.0,1.0
-3RJM_1,169,160,15.811,0.207,False,1.597,0.958
-6Z6Z_1,187,172,15.375,0.225,True,0.001,1.0
-8SEB_3,152,152,16.071,0.145,True,0.001,1.0
-4BCN_2,262,257,17.941,0.164,False,0.0,1.0
+entity_id,length,n_observed,rmsd_pred,tm_pred,mirror_pred,lddt_pred,lddt_oracle,mean_confidence,confidence_vs_lddt_spearman,rmsd_oracle,tm_oracle
+8COK_1,104,101,8.692,0.237,False,0.562,1.0,73.1,0.288,0.0,1.0
+3RJM_1,169,160,15.811,0.207,False,0.271,0.999,37.7,0.415,1.597,0.958
+6Z6Z_1,187,172,15.375,0.225,True,0.28,1.0,33.1,-0.18,0.001,1.0
+8SEB_3,152,152,16.071,0.145,True,0.257,1.0,40.8,0.178,0.001,1.0
+4BCN_2,262,257,17.941,0.164,False,0.251,1.0,44.8,-0.077,0.0,1.0
