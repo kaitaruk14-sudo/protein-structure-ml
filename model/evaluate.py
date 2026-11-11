@@ -3,15 +3,20 @@ Evaluate the trained neural model on the validation set, add it to the
 baseline results, and make the figures for the preliminary-results section.
 
 Run from ~/machine_learning (after baselines.py and train.py):
-    python model/evaluate.py
+    python model/evaluate.py                      # the basic model (column 'neural')
+    python model/evaluate.py --run_name long      # model/checkpoints/long_best.pt (column 'neural_long')
 
 Writes to results/progress_report/:
-    results_table.md            Table: all methods, mean precision, 95% CI
-    per_chain_val.csv           per-chain precision for every method
+    results_table.md            Table: all methods present in per_chain_val.csv
+    per_chain_val.csv           per-chain precision for every method; only this run's
+                                column is added or replaced, all other columns are kept
     model_summary.json          parameter count, training time, etc.
     fig_results.png             bar chart of the table
     fig_learning_curve.png      loss and precision over training
     fig_example_predictions.png true vs predicted contacts for 3 proteins
+For a run other than 'basic' the last four files get a suffix instead of being
+overwritten (model_summary_long.json, fig_results_long.png, ...), and the
+learning curve is read from train_log_<run>.csv.
 """
 import argparse
 import csv
@@ -30,6 +35,37 @@ from dataset import CONTACT_BINS, ProteinDataset, collate
 
 METHODS = [("random", "Random"), ("separation", "Sequence separation"),
            ("logreg", "Logistic regression"), ("neural", "Neural distogram model")]
+# every column that can appear in per_chain_val.csv, in table order
+ALL_METHODS = [("random", "Random"), ("separation", "Sequence separation"),
+               ("logreg", "Logistic regression"),
+               ("logreg_rich", "Logistic regression, rich features"),
+               ("gbt", "Gradient-boosted trees, rich features"),
+               ("neural", "Neural distogram model")]
+ID_COLS = ("entity_id", "length")
+
+
+def add_column(base, column, values):
+    """
+    Return the per-chain rows with `column` added (or replaced). Every other column keeps
+    its original text, and the chain ids and their order are unchanged.
+    """
+    assert len(values) == len(base), "chain lists don't match the baselines"
+    out = []
+    for r, v in zip(base, values):
+        r = dict(r)
+        r[column] = f"{v:.4f}"
+        out.append(r)
+    assert [r["entity_id"] for r in out] == [r["entity_id"] for r in base]
+    return out
+
+
+def write_per_chain(path, rows):
+    """Write per_chain_val.csv from dict rows, keeping the existing column order."""
+    fields = list(rows[0].keys())
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)    # same line endings as tree_models.py wrote
+        w.writeheader()
+        w.writerows(rows)
 
 
 @torch.no_grad()
@@ -77,8 +113,14 @@ def evaluate_chains(model, rows, device, return_maps_for=()):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--quick", action="store_true")
+    p.add_argument("--run_name", default="basic",
+                   help="which model to evaluate: model/checkpoints/<run_name>_best.pt "
+                        "(default basic; its results go in column 'neural', any other run "
+                        "goes in column 'neural_<run_name>' with suffixed output files)")
     args = p.parse_args()
-    name = "basic_quick" if args.quick else "basic"
+    name = args.run_name + ("_quick" if args.quick else "")
+    column = "neural" if args.run_name == "basic" else f"neural_{args.run_name}"
+    suffix = "" if args.run_name == "basic" else f"_{args.run_name}"
     # quick test results go to their own folder so the real ones are never overwritten
     out_dir = os.path.join(RESULTS_DIR, "quick_test") if args.quick else RESULTS_DIR
     os.makedirs(out_dir, exist_ok=True)
@@ -92,7 +134,8 @@ def main():
     device = get_device()
     ck_path = os.path.join(CHECKPOINT_DIR, f"{name}_best.pt")
     if not os.path.exists(ck_path):
-        raise SystemExit(f"No checkpoint at {ck_path}. Run python model/train.py first.")
+        raise SystemExit(f"No checkpoint at {ck_path}. Run python model/train.py "
+                         f"--run_name {args.run_name} first.")
     ck = torch.load(ck_path, map_location=device)
     model = BasicDistogramNet().to(device)
     model.load_state_dict(ck["model"])
@@ -114,23 +157,24 @@ def main():
     for target in (100, 180, 260):
         examples.append(rows[int(np.argmin(np.abs(lengths - target)))]["entity_id"])
 
-    print(f"Evaluating neural model ({n_params:,} parameters) on {len(rows):,} val chains...")
+    print(f"Evaluating neural model '{args.run_name}' ({n_params:,} parameters) on {len(rows):,} val chains...")
     val_loss, prec, maps, prec_bins = evaluate_chains(model, rows, device, return_maps_for=set(examples))
     assert len(prec) == len(base), "chain lists don't match the baselines"
 
-    per_chain = {m: [float(r[m]) for r in base] for m, _ in METHODS[:3]}
-    per_chain["neural"] = prec
-    with open(os.path.join(out_dir, "per_chain_val.csv"), "w") as f:
-        f.write("entity_id,length,random,separation,logreg,neural\n")
-        for k, r in enumerate(base):
-            f.write(f"{r['entity_id']},{r['length']},{r['random']},{r['separation']},"
-                    f"{r['logreg']},{prec[k]:.4f}\n")
+    # keep every existing column; only this run's column is added or replaced
+    new_rows = add_column(base, column, prec)
+    write_per_chain(os.path.join(out_dir, "per_chain_val.csv"), new_rows)
+    methods = [m for m in ALL_METHODS if m[0] in new_rows[0]]
+    if column != "neural":
+        methods.append((column, f"Neural distogram model ({args.run_name} training)"))
+    per_chain = {m: [float(r[m]) for r in new_rows] for m, _ in methods}
     print()
-    write_table(per_chain, METHODS, out_dir=out_dir)
+    write_table(per_chain, methods, out_dir=out_dir)
 
-    log_path = os.path.join(out_dir, "train_log.csv")
+    log_name = "train_log.csv" if args.run_name == "basic" else f"train_log_{args.run_name}.csv"
+    log_path = os.path.join(out_dir, log_name)
     log = list(csv.DictReader(open(log_path))) if os.path.exists(log_path) else []
-    with open(os.path.join(out_dir, "model_summary.json"), "w") as f:
+    with open(os.path.join(out_dir, f"model_summary{suffix}.json"), "w") as f:
         json.dump({"parameters": n_params, "best_epoch": ck["epoch"],
                    "training_minutes": round(ck["minutes"], 1),
                    "device": str(device), "val_loss_full_chains": round(val_loss, 4),
@@ -149,9 +193,11 @@ def main():
                          "axes.titlelocation": "left"})
 
     # 1. results bar chart with 95% CIs
-    fig, ax = plt.subplots(figsize=(7.5, 3.2))
+    # the basic run keeps the original four bars; another run shows every method present
+    fig_methods = METHODS if args.run_name == "basic" else methods
+    fig, ax = plt.subplots(figsize=(7.5, max(3.2, 0.5 * len(fig_methods) + 0.9)))
     labels, means, errs = [], [], []
-    for m, label in METHODS:
+    for m, label in fig_methods:
         mean, lo, hi = bootstrap_ci(per_chain[m])
         labels.append(label); means.append(100 * mean)
         errs.append([100 * (mean - lo), 100 * (hi - mean)])
@@ -164,7 +210,7 @@ def main():
     ax.set_xlim(0, max(m + e[1] for m, e in zip(means, errs)) * 1.18)
     ax.set_xlabel("Long-range top-L/5 contact precision on validation (%), 95% CI")
     ax.set_title("Preliminary results")
-    fig.tight_layout(); fig.savefig(os.path.join(out_dir, "fig_results.png"), dpi=200)
+    fig.tight_layout(); fig.savefig(os.path.join(out_dir, f"fig_results{suffix}.png"), dpi=200)
     plt.close(fig)
 
     # 2. learning curve
@@ -180,7 +226,7 @@ def main():
         axes[1].set_title("Val long-range top-L/5 precision", fontsize=11)
         for a in axes:
             a.xaxis.get_major_locator().set_params(integer=True)
-        fig.tight_layout(); fig.savefig(os.path.join(out_dir, "fig_learning_curve.png"), dpi=200)
+        fig.tight_layout(); fig.savefig(os.path.join(out_dir, f"fig_learning_curve{suffix}.png"), dpi=200)
         plt.close(fig)
 
     # 3. true vs predicted contacts
@@ -201,7 +247,7 @@ def main():
     fig.suptitle("Contacts: model prediction (upper triangle) vs experimental truth (lower triangle)",
                  x=0.02, ha="left", fontweight="bold", fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.94))
-    fig.savefig(os.path.join(out_dir, "fig_example_predictions.png"), dpi=200)
+    fig.savefig(os.path.join(out_dir, f"fig_example_predictions{suffix}.png"), dpi=200)
     plt.close(fig)
     print(f"\nModel parameters: {n_params:,}")
     print(f"Figures and tables saved in {out_dir}")
