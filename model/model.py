@@ -119,5 +119,23 @@ class BasicDistogramNet(nn.Module):
         return 0.5 * (logits + logits.transpose(2, 3))               # distances are symmetric
 
 
+# Named model sizes. "small" = the progress-report model (259k parameters);
+# "medium" = the original October design (~2.0M parameters).
+MODEL_SIZES = {
+    "small":  dict(seq_dim=64,  n_heads=4, n_seq_layers=2, pair_channels=32, n_res_blocks=8),
+    "medium": dict(seq_dim=128, n_heads=8, n_seq_layers=4, pair_channels=64, n_res_blocks=16),
+}
+
+
+def load_model(checkpoint_path, device):
+    """Rebuild the right architecture from a checkpoint and load its weights.
+    Checkpoints from before model sizes existed have no 'model_config' -> small."""
+    import torch
+    ck = torch.load(checkpoint_path, map_location=device)
+    model = BasicDistogramNet(**ck.get("model_config", MODEL_SIZES["small"])).to(device)
+    model.load_state_dict(ck["model"])
+    return model, ck
+
+
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters())
