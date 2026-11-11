@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from dataset import ProteinDataset, collate
 from evaluate import evaluate_chains
-from model import BasicDistogramNet, count_parameters
+from model import MODEL_SIZES, BasicDistogramNet, count_parameters
 
 
 def get_device():
@@ -53,6 +53,8 @@ def main():
                    help="validation chains checked after each epoch")
     p.add_argument("--quick", action="store_true", help="tiny smoke test")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--size", default="small", choices=["small", "medium"],
+                   help="model size: small (259k params, default) or medium (~2.0M)")
     p.add_argument("--run_name", default="basic",
                    help="name for this run's checkpoints and log, e.g. 'long' -> "
                         "checkpoints/long_best.pt and results/.../train_log_long.csv "
@@ -78,7 +80,8 @@ def main():
     loader = DataLoader(train_ds, batch_size=args.batch_size, sampler=sampler,
                         collate_fn=collate, num_workers=0)
 
-    model = BasicDistogramNet().to(device)
+    model_config = MODEL_SIZES[args.size]
+    model = BasicDistogramNet(**model_config).to(device)
     print(f"Device: {device}")
     print(f"Train: {len(train_ds):,} chains in {train_ds.n_clusters:,} clusters "
           f"({samples_per_epoch:,} samples per epoch) | val check: {len(val_rows)} chains")
@@ -100,6 +103,9 @@ def main():
     start_epoch, best_prec, minutes_done = 0, -1.0, 0.0
     if os.path.exists(last_path):
         ck = torch.load(last_path, map_location=device)
+        if ck.get("model_config", MODEL_SIZES["small"]) != model_config:
+            raise SystemExit(f"{last_path} was trained with a different --size. "
+                             "Use the same --size, or a new --run_name.")
         model.load_state_dict(ck["model"]); opt.load_state_dict(ck["opt"])
         sched.load_state_dict(ck["sched"])
         start_epoch, best_prec, minutes_done = ck["epoch"], ck["best_prec"], ck["minutes"]
@@ -111,7 +117,7 @@ def main():
     def save(path, epoch, minutes):
         torch.save({"model": model.state_dict(), "opt": opt.state_dict(),
                     "sched": sched.state_dict(), "epoch": epoch, "best_prec": best_prec,
-                    "minutes": minutes, "args": vars(args)}, path)
+                    "minutes": minutes, "args": vars(args), "model_config": model_config}, path)
 
     t0 = time.time() - minutes_done * 60
     out_of_time = False

@@ -217,12 +217,11 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args()
 
-    from model import BasicDistogramNet
+    from model import load_model
     from train import get_device
     device = get_device()
     ck_path = os.path.join(CHECKPOINT_DIR, f"{args.run_name}_best.pt")
-    model = BasicDistogramNet().to(device)
-    model.load_state_dict(torch.load(ck_path, map_location=device)["model"])
+    model, _ = load_model(ck_path, device)
     model.eval()
 
     val = {r["entity_id"]: r for r in load_index("val")}
