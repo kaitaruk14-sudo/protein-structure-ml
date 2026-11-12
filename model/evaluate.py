@@ -129,16 +129,14 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from train import get_device
-    from model import BasicDistogramNet, count_parameters
+    from model import count_parameters, load_model
 
     device = get_device()
     ck_path = os.path.join(CHECKPOINT_DIR, f"{name}_best.pt")
     if not os.path.exists(ck_path):
         raise SystemExit(f"No checkpoint at {ck_path}. Run python model/train.py "
                          f"--run_name {args.run_name} first.")
-    ck = torch.load(ck_path, map_location=device)
-    model = BasicDistogramNet().to(device)
-    model.load_state_dict(ck["model"])
+    model, ck = load_model(ck_path, device)   # rebuilds the architecture stored in the checkpoint
     n_params = count_parameters(model)
 
     # same chains, same order as baselines.py
