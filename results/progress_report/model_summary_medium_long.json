@@ -1,0 +1,20 @@
+{
+  "parameters": 2007304,
+  "best_epoch": 11,
+  "training_minutes": 455.7,
+  "device": "cpu",
+  "val_loss_full_chains": 2.2765,
+  "neural_precision_with_bin_labels_d_lt_7.81A": 0.1882,
+  "training_settings": {
+    "epochs": 12,
+    "batch_size": 4,
+    "crop": 128,
+    "lr": 0.001,
+    "max_minutes": 600.0,
+    "val_chains": 300,
+    "quick": false,
+    "seed": 0,
+    "size": "medium",
+    "run_name": "medium_long"
+  }
+}
