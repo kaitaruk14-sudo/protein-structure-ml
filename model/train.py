@@ -53,8 +53,8 @@ def main():
                    help="validation chains checked after each epoch")
     p.add_argument("--quick", action="store_true", help="tiny smoke test")
     p.add_argument("--seed", type=int, default=0)
-    p.add_argument("--size", default="small", choices=["small", "medium"],
-                   help="model size: small (259k params, default) or medium (~2.0M)")
+    p.add_argument("--size", default="small", choices=["small", "medium", "large"],
+                   help="model size: small (259k params, default), medium (~2.0M) or large (~4.5M)")
     p.add_argument("--run_name", default="basic",
                    help="name for this run's checkpoints and log, e.g. 'long' -> "
                         "checkpoints/long_best.pt and results/.../train_log_long.csv "

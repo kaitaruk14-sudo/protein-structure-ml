@@ -120,10 +120,13 @@ class BasicDistogramNet(nn.Module):
 
 
 # Named model sizes. "small" = the progress-report model (259k parameters);
-# "medium" = the original October design (~2.0M parameters).
+# "medium" = the original October design (~2.0M parameters); "large" = ~4.5M.
 MODEL_SIZES = {
     "small":  dict(seq_dim=64,  n_heads=4, n_seq_layers=2, pair_channels=32, n_res_blocks=8),
     "medium": dict(seq_dim=128, n_heads=8, n_seq_layers=4, pair_channels=64, n_res_blocks=16),
+    # "large" (~4.5M parameters): wider than medium (sequence 192, pair grid 96 channels),
+    # same depth. Needs about 4.6 GB at batch size 2; batch 4 doesn't fit in 8 GB.
+    "large":  dict(seq_dim=192, n_heads=8, n_seq_layers=4, pair_channels=96, n_res_blocks=16),
 }
 
 
