@@ -44,6 +44,19 @@ ALL_METHODS = [("random", "Random"), ("separation", "Sequence separation"),
 ID_COLS = ("entity_id", "length")
 
 
+def table_methods(fields):
+    """
+    The methods to show in the table: the fixed ones present in the CSV, then every
+    other neural_<run> column (e.g. neural_long, neural_medium), so one run never drops
+    another run's row.
+    """
+    methods = [m for m in ALL_METHODS if m[0] in fields]
+    for c in fields:
+        if c.startswith("neural_"):
+            methods.append((c, f"Neural distogram model ({c[len('neural_'):].replace('_', ' ')} training)"))
+    return methods
+
+
 def add_column(base, column, values):
     """
     Return the per-chain rows with `column` added (or replaced). Every other column keeps
@@ -162,9 +175,7 @@ def main():
     # keep every existing column; only this run's column is added or replaced
     new_rows = add_column(base, column, prec)
     write_per_chain(os.path.join(out_dir, "per_chain_val.csv"), new_rows)
-    methods = [m for m in ALL_METHODS if m[0] in new_rows[0]]
-    if column != "neural":
-        methods.append((column, f"Neural distogram model ({args.run_name} training)"))
+    methods = table_methods(list(new_rows[0].keys()))
     per_chain = {m: [float(r[m]) for r in new_rows] for m, _ in methods}
     print()
     write_table(per_chain, methods, out_dir=out_dir)
