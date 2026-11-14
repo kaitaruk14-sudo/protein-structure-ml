@@ -12,12 +12,20 @@ val rows passing filters (>=30 observed, >=50%, len<=512): 3,992
 CSV ids == filtered val ids as sets: True; same order: True
 (a) rows before/after: 3,992/3,992
     same ids in same order: True
-    unchanged baseline columns: True
-    columns now: ['entity_id', 'length', 'random', 'separation', 'logreg', 'neural']
+    columns of main still unchanged (length, random, separation, logreg, neural, logreg_rich, gbt, neural_long, neural_medium_long, neural_medium): True
+    columns now: ['entity_id', 'length', 'random', 'separation', 'logreg', 'neural', 'logreg_rich', 'gbt', 'neural_long', 'neural_medium_long', 'neural_medium']
+(b) checking columns: ['random', 'separation', 'logreg', 'neural', 'logreg_rich', 'gbt', 'neural_long', 'neural_medium_long', 'neural_medium']
 (b) values outside [0,1] or NaN: 0; precision*k not a whole number: 0
+(c) neural columns hand-checked: ['neural', 'neural_long', 'neural_medium_long', 'neural_medium']
 (c) 10RC_1: L=143, long-range pairs=6786, k=28, contacts=198
     separation: hand range [0.0000, 0.2143] vs CSV 0.0357 -> MATCH
     neural: hand 0.2143 vs CSV 0.2143 -> MATCH
+    neural_long: hand 0.1429 vs CSV 0.1429 -> MATCH
+    neural_medium_long: hand 0.2143 vs CSV 0.2143 -> MATCH
+    neural_medium: hand 0.2143 vs CSV 0.2143 -> MATCH
 (c) 4Z68_1: L=155, long-range pairs=8646, k=31, contacts=211
     separation: hand range [0.0000, 0.1935] vs CSV 0.0323 -> MATCH
     neural: hand 0.2903 vs CSV 0.2903 -> MATCH
+    neural_long: hand 0.2581 vs CSV 0.2581 -> MATCH
+    neural_medium_long: hand 0.2903 vs CSV 0.2903 -> MATCH
+    neural_medium: hand 0.2903 vs CSV 0.2903 -> MATCH
