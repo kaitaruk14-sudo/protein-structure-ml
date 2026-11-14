@@ -1,0 +1,66 @@
+40 validation proteins scored by every model: medium_long, long, medium
+(same proteins for every model, so differences below are paired)
+
+1. PER MODEL (mean / median over proteins)
+  medium_long:
+    RMSD (A, lower is better)        mean 14.400   median 15.115
+    TM-score (higher is better)      mean  0.196   median  0.177
+    lDDT (higher is better)          mean  0.304   median  0.281
+    confidence vs lDDT (Spearman)    mean +0.186   median +0.179
+    proteins with TM >= 0.5: 0 / 40
+  long:
+    RMSD (A, lower is better)        mean 14.851   median 15.445
+    TM-score (higher is better)      mean  0.173   median  0.160
+    lDDT (higher is better)          mean  0.287   median  0.274
+    confidence vs lDDT (Spearman)    mean +0.109   median +0.128
+    proteins with TM >= 0.5: 0 / 40
+  medium:
+    RMSD (A, lower is better)        mean 14.524   median 15.247
+    TM-score (higher is better)      mean  0.186   median  0.168
+    lDDT (higher is better)          mean  0.291   median  0.280
+    confidence vs lDDT (Spearman)    mean +0.142   median +0.189
+    proteins with TM >= 0.5: 0 / 40
+
+  Oracle (same reconstruction on the TRUE distances; same for every model):
+    mean RMSD 0.35 A, median 0.00 A; mean lDDT 0.995
+    reconstruction failures (oracle RMSD > 3.0 A): 1 ['3KTM_1']
+
+2. PAIRED DIFFERENCES (A minus B, mean over proteins, 2000-resample bootstrap 95% CI)
+  medium_long - long:
+    RMSD (A, lower is better)         -0.451  [-0.857, -0.065]  (CI excludes 0); medium_long better on 24/40
+    TM-score (higher is better)       +0.023  [+0.009, +0.039]  (CI excludes 0); medium_long better on 27/40
+    lDDT (higher is better)           +0.016  [+0.011, +0.021]  (CI excludes 0); medium_long better on 32/40
+  medium_long - medium:
+    RMSD (A, lower is better)         -0.124  [-0.486, +0.251]  (CI includes 0); medium_long better on 23/40
+    TM-score (higher is better)       +0.010  [-0.002, +0.021]  (CI includes 0); medium_long better on 19/40
+    lDDT (higher is better)           +0.012  [+0.008, +0.017]  (CI excludes 0); medium_long better on 30/40
+  long - medium:
+    RMSD (A, lower is better)         +0.327  [-0.026, +0.688]  (CI includes 0); long better on 12/40
+    TM-score (higher is better)       -0.013  [-0.023, -0.004]  (CI excludes 0); long better on 15/40
+    lDDT (higher is better)           -0.004  [-0.008, -0.000]  (CI excludes 0); long better on 11/40
+
+3. LENGTH DEPENDENCE
+  protein lengths: min 64, median 149, max 298
+  medium_long: rank correlation of score with length (bootstrap 95% CI)
+    RMSD (A, lower is better)        rho +0.71  [+0.49, +0.85]
+    TM-score (higher is better)      rho +0.20  [-0.09, +0.49]
+    lDDT (higher is better)          rho -0.52  [-0.71, -0.25]
+    shortest third  (L 64-126, n=14): RMSD  11.6 A, TM 0.193, lDDT 0.356
+    middle third    (L 132-175, n=13): RMSD  13.9 A, TM 0.209, lDDT 0.288
+    longest third   (L 181-298, n=13): RMSD  17.9 A, TM 0.186, lDDT 0.263
+  long: rank correlation of score with length (bootstrap 95% CI)
+    RMSD (A, lower is better)        rho +0.68  [+0.44, +0.84]
+    TM-score (higher is better)      rho +0.05  [-0.22, +0.32]
+    lDDT (higher is better)          rho -0.51  [-0.72, -0.24]
+    shortest third  (L 64-126, n=14): RMSD  12.2 A, TM 0.169, lDDT 0.335
+    middle third    (L 132-175, n=13): RMSD  14.7 A, TM 0.181, lDDT 0.272
+    longest third   (L 181-298, n=13): RMSD  17.9 A, TM 0.168, lDDT 0.252
+  medium: rank correlation of score with length (bootstrap 95% CI)
+    RMSD (A, lower is better)        rho +0.67  [+0.43, +0.84]
+    TM-score (higher is better)      rho +0.14  [-0.17, +0.42]
+    lDDT (higher is better)          rho -0.45  [-0.69, -0.17]
+    shortest third  (L 64-126, n=14): RMSD  11.7 A, TM 0.186, lDDT 0.337
+    middle third    (L 132-175, n=13): RMSD  14.1 A, TM 0.194, lDDT 0.280
+    longest third   (L 181-298, n=13): RMSD  18.0 A, TM 0.178, lDDT 0.255
+
+Caveat: lengths are limited to 50-300 residues (structure_3d.py --max_len), so this says nothing about longer proteins. Spearman rho near +-1 = strong monotone trend.
