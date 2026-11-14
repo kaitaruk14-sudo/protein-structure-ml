@@ -7,8 +7,12 @@ Task B sanity checks for the validation results. Validation split only; nothing 
   4. independent hand recomputation (own loops, own C-beta code) of sequence-separation and
      neural precision for two chains, compared with the CSV
 
-Run from the repo root after model/evaluate.py, on the branch that added the 'neural' column:
-    python model/sanity_checks.py [baseline_git_ref]     (default ref: main = baselines-only CSV)
+Every method column in per_chain_val.csv is checked (random, separation, logreg, logreg_rich, gbt and
+every neural / neural_<run> column); each neural column is also recomputed by hand from its own checkpoint.
+
+Run from the repo root after model/evaluate.py:
+    python model/sanity_checks.py [baseline_git_ref]     (default ref: main)
+    python model/sanity_checks.py | tee results/progress_report/sanity_checks.txt
 """
 import csv
 import io
@@ -17,11 +21,12 @@ import subprocess
 import sys
 from collections import defaultdict
 
-import numpy as np
-
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASELINE_REF = sys.argv[1] if len(sys.argv) > 1 else "main"
 sys.path.insert(0, os.path.join(REPO, "model"))
+
+import common  # noqa: E402,F401  must be imported before numpy / torch (OpenMP fix, e.g. 'OMP: Error #15' on macOS)
+import numpy as np  # noqa: E402
 RES = os.path.join(REPO, "results", "progress_report")
 DATA = os.path.join(REPO, "data", "protein_structures")
 RES = os.path.join(REPO, "results", "progress_report")
@@ -86,13 +91,16 @@ before = list(csv.DictReader(io.StringIO(subprocess.run(
 after = list(csv.DictReader(open(os.path.join(RES, "per_chain_val.csv"))))
 print(f"(a) rows before/after: {len(before):,}/{len(after):,}")
 print(f"    same ids in same order: {[r['entity_id'] for r in before] == [r['entity_id'] for r in after]}")
-print(f"    unchanged baseline columns: "
-      f"{all(b[c] == a[c] for b, a in zip(before, after) for c in ('length', 'random', 'separation', 'logreg'))}")
+kept_cols = [c for c in before[0] if c != "entity_id"]
+print(f"    columns of {BASELINE_REF} still unchanged ({', '.join(kept_cols)}): "
+      f"{all(b[c] == a[c] for b, a in zip(before, after) for c in kept_cols)}")
 print(f"    columns now: {list(after[0])}")
 
 # (b)
 bad_range = bad_int = 0
 meta = {}
+method_cols = [c for c in after[0] if c not in ("entity_id", "length")]
+print(f"(b) checking columns: {method_cols}")
 for r in after:
     d = np.load(os.path.join(DATA, "backbone", r["entity_id"] + ".npz"))
     mask = d["mask"].astype(bool)
@@ -103,7 +111,7 @@ for r in after:
     n_pairs = sum(int((obs[a + 1:] - obs[a] >= 24).sum()) for a in range(len(obs)))
     k = min(max(1, L // 5), n_pairs)
     meta[r["entity_id"]] = (L, k, n_pairs)
-    for m in ("random", "separation", "logreg", "neural"):
+    for m in method_cols:
         v = float(r[m])
         if not (0 <= v <= 1) or np.isnan(v):
             bad_range += 1
@@ -142,13 +150,27 @@ picks = [nz[0], nz[len(nz)//2]]
 
 import torch
 from common import load_chain
-from model import BasicDistogramNet
+from model import load_model
 from dataset import BIN_EDGES
 
-ck = torch.load(os.path.join(REPO, "model", "checkpoints", "basic_best.pt"), map_location="cpu")
-net = BasicDistogramNet()
-net.load_state_dict(ck["model"])
-net.eval()
+
+def checkpoint_for(col):
+    """column 'neural' -> basic_best.pt; column 'neural_<run>' -> <run>_best.pt"""
+    run = "basic" if col == "neural" else col[len("neural_"):]
+    return os.path.join(REPO, "model", "checkpoints", f"{run}_best.pt")
+
+
+neural_cols = [c for c in after[0] if c == "neural" or c.startswith("neural_")]
+nets = {}
+for col in neural_cols:
+    path = checkpoint_for(col)
+    if os.path.exists(path):
+        net, _ = load_model(path, "cpu")
+        net.eval()
+        nets[col] = net
+    else:
+        print(f"(c) no checkpoint at {path}: the hand check for column {col} is skipped")
+print(f"(c) neural columns hand-checked: {list(nets)}")
 
 for r in picks:
     eid = r["entity_id"]
@@ -166,19 +188,20 @@ for r in picks:
     hi = (base_hits + min(need, n_pos_ties)) / k
     csv_sep = float(r["separation"])
     ok_sep = lo - 6e-5 <= csv_sep <= hi + 6e-5
-    # neural: own top-k from the model's P(d < 8 A) score
-    tokens, _, _ = load_chain(eid)
-    with torch.no_grad():
-        t = torch.tensor(tokens)[None]
-        sm = torch.ones_like(t, dtype=torch.bool)
-        logits = net(t, sm)
-    n_contact_bins = int((BIN_EDGES <= 8.0).sum())
-    prob = logits.softmax(1)[0, :n_contact_bins].sum(0).numpy()
-    scores = np.array([prob[i, j] for i, j, _ in pl])
     labels = np.array([x[2] for x in pl])
-    order = np.argsort(-scores, kind="stable")
-    neural_hand = labels[order[:k]].mean()
     print(f"(c) {eid}: L={L}, long-range pairs={len(pl)}, k={k}, contacts={int(labels.sum())}")
     print(f"    separation: hand range [{lo:.4f}, {hi:.4f}] vs CSV {csv_sep:.4f} -> {'MATCH' if ok_sep else 'MISMATCH'}")
-    print(f"    neural: hand {neural_hand:.4f} vs CSV {float(r['neural']):.4f} -> "
-          f"{'MATCH' if abs(neural_hand - float(r['neural'])) < 6e-5 else 'MISMATCH'}")
+    # neural: own top-k from each model's P(d < 8 A) score
+    tokens, _, _ = load_chain(eid)
+    for col, net in nets.items():
+        with torch.no_grad():
+            t = torch.tensor(tokens)[None]
+            sm = torch.ones_like(t, dtype=torch.bool)
+            logits = net(t, sm)
+        n_contact_bins = int((BIN_EDGES <= 8.0).sum())
+        prob = logits.softmax(1)[0, :n_contact_bins].sum(0).numpy()
+        scores = np.array([prob[i, j] for i, j, _ in pl])
+        order = np.argsort(-scores, kind="stable")
+        neural_hand = labels[order[:k]].mean()
+        print(f"    {col}: hand {neural_hand:.4f} vs CSV {float(r[col]):.4f} -> "
+              f"{'MATCH' if abs(neural_hand - float(r[col])) < 6e-5 else 'MISMATCH'}")
