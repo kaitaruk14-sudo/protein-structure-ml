@@ -127,6 +127,10 @@ MODEL_SIZES = {
     # "large" (~4.5M parameters): wider than medium (sequence 192, pair grid 96 channels),
     # same depth. Needs about 4.6 GB at batch size 2; batch 4 doesn't fit in 8 GB.
     "large":  dict(seq_dim=192, n_heads=8, n_seq_layers=4, pair_channels=96, n_res_blocks=16),
+    # Ablation: "medium" with the attention layers removed (n_seq_layers=0). Each residue then
+    # only knows its own amino acid before the pair grid; all context has to come from the
+    # 2D residual blocks. Everything else is identical to medium.
+    "medium_noattn": dict(seq_dim=128, n_heads=8, n_seq_layers=0, pair_channels=64, n_res_blocks=16),
 }
 
 
