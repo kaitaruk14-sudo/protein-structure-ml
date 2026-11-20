@@ -21,3 +21,6 @@ __pycache__/
 
 # data zip for teammates (shared through a GitHub Release, not git)
 data_release/
+
+# quick smoke-test outputs (python model/train.py --quick / evaluate.py --quick)
+results/progress_report/quick_test/
