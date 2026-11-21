@@ -1,0 +1,20 @@
+{
+  "n_test_chains": 3714,
+  "test_long_range_pairs": 89565821,
+  "test_long_range_contact_rate_pct": 1.15,
+  "neural_models": [
+    "basic",
+    "long",
+    "medium",
+    "medium_long",
+    "large"
+  ],
+  "parameters": {
+    "neural": 259108,
+    "neural_long": 259108,
+    "neural_medium": 2007304,
+    "neural_medium_long": 2007304,
+    "neural_large": 4497512
+  },
+  "minutes": 606.6
+}
