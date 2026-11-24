@@ -1,0 +1,2 @@
+# Generated outputs (3D viewers, figures, tables): exclude from GitHub language statistics
+results/** linguist-generated
