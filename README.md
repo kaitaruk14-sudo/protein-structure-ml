@@ -64,17 +64,26 @@ Run everything from the repository root unless stated otherwise. Trained models 
 | Neural model: evaluation | `python model/evaluate.py` | table and figures in `results/progress_report/` |
 | Tree models: training | `python model/tree_models.py train` | `model/checkpoints/*_best.joblib` |
 | Tree models: evaluation | `python model/tree_models.py evaluate` | adds columns to `per_chain_val.csv`, updates the table |
+| Neural model: evaluate another run | `python model/evaluate.py --run_name medium_long` | adds `neural_<run_name>` to `per_chain_val.csv`, updates the table |
 | Paired comparison | `python model/compare_methods.py` | `results/progress_report/neural_vs_logreg.md` |
+| Paired comparison, any two columns | `python model/compare_methods.py neural_large neural_medium_long` | `results/progress_report/<a>_vs_<b>.md` |
 | Sanity checks | `python model/sanity_checks.py \| tee results/progress_report/sanity_checks.txt` | printed, and saved to `sanity_checks.txt` |
-| Error analysis | `python model/error_analysis.py` | `results/progress_report/error_analysis/` |
+| Error analysis | `python model/error_analysis.py` (add `--v2` for all models) | `results/progress_report/error_analysis/` |
+| 3D structures | `python model/structure_3d.py --run_name medium_long --n 40` | `results/structure_3d/<run_name>/` (open `index.html`) |
+| 3D comparison of models | `python model/analyze_structure_3d.py \| tee results/structure_3d/analysis.txt` | `results/structure_3d/analysis.txt` |
+| Test evaluation: dry run on validation | `python model/test_evaluation.py --split val --limit 150` | must print PASS; writes only to `tmp/` |
+| Test evaluation: final run (once) | `python model/test_evaluation.py --split test --confirm-final` | `results/test_final/` |
 
 ### Training options
 
 ```bash
 python model/train.py --run_name long --epochs 16 --max_minutes 240
+python model/train.py --size medium --run_name medium_long --batch_size 4 --epochs 12 --max_minutes 600
 ```
 
 - `--run_name` saves to `model/checkpoints/<run_name>_best.pt` and `train_log_<run_name>.csv` (default `basic`).
+- `--size`: `small` (259k parameters, default), `medium` (2.0M), `large` (4.5M) or `medium_noattn` (medium without attention layers, for the ablation). A run can only be resumed with the same `--size`.
+- `--batch_size` (default 8): on an 8 GB Mac use 4 for `medium` / `medium_noattn` and 2 for `large`.
 - `--epochs`, `--max_minutes`: training stops at whichever comes first.
 - Training can be stopped with Ctrl+C and resumed by running the same command again.
 - On macOS, prefix long runs with `caffeinate -is` and keep the laptop plugged in with the lid open so it doesn't sleep.
