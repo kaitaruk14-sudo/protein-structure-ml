@@ -10,5 +10,6 @@
 | Neural distogram model (medium long training) | 20.06% | 19.49% – 20.60% | +16.59 pp (+16.02 to +17.11) |
 | Neural distogram model (medium training) | 17.20% | 16.76% – 17.62% | +13.72 pp (+13.30 to +14.15) |
 | Neural distogram model (large training) | 20.89% | 20.32% – 21.45% | +17.42 pp (+16.83 to +17.98) |
+| Neural distogram model (noattn training) | 19.37% | 18.84% – 19.90% | +15.89 pp (+15.36 to +16.41) |
 
 Evaluated on 3,992 validation chains (length ≤ 512). Contact = Cβ–Cβ < 8 Å; long-range = |i−j| ≥ 24. CIs: 2,000 bootstrap resamples of chains; pp = percentage points.
